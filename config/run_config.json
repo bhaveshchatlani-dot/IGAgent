@@ -1,0 +1,6 @@
+{
+  "tickers": ["AAPL", "TSLA"],
+  "market": "US",
+  "timeframe": "1D",
+  "template": "daily_snapshot"
+}

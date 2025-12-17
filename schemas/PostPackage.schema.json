@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PostPackage",
+  "type": "object",
+  "required": ["run_id", "created_at", "headline", "caption", "claims", "evidence"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "headline": { "type": "string" },
+    "caption": { "type": "string" },
+    "claims": { "type": "array", "items": { "type": "string" } },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim", "source"],
+        "properties": {
+          "claim": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
