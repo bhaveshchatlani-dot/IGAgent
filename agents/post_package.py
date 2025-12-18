@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
-def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, signals: dict) -> dict:
+def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, signals: dict, image_path: str | None = None) -> dict:
     created_at = now_iso()
     headline = f"Daily Snapshot: {', '.join(run_config['tickers'])}"
 
@@ -18,7 +18,7 @@ def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, sig
         return f"{x:+.2f}%" if isinstance(x, (int, float)) else "N/A"
 
     def arrow(dir_val):
-        return {"UP": "↑", "DOWN": "↓", "FLAT": "→"}.get(dir_val, "")
+        return {"UP": "🔺", "DOWN": "🔻", "FLAT": "➖"}.get(dir_val, "➖")
 
     lines = []
     for t in run_config["tickers"]:
@@ -45,7 +45,7 @@ def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, sig
         "Educational only. Not financial advice."
     )
 
-    return {
+    pkg = {
         "run_id": run_id,
         "created_at": created_at,
         "headline": headline,
@@ -53,3 +53,8 @@ def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, sig
         "claims": claims,
         "evidence": evidence
     }
+
+    if image_path:
+        pkg["assets"] = [{"type": "image", "path": image_path}]
+
+    return pkg

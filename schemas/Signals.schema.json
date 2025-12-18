@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signals",
+  "type": "object",
+  "required": ["as_of", "pct_change_1d", "direction_1d", "note"],
+  "properties": {
+    "as_of": { "type": "string", "format": "date-time" },
+    "pct_change_1d": { "$ref": "#/$defs/pctMap" },
+    "direction_1d": { "$ref": "#/$defs/dirMap" },
+    "note": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "pctMap": {
+      "type": "object",
+      "additionalProperties": { "anyOf": [{ "type": "number" }, { "type": "null" }] }
+    },
+    "dirMap": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string", "enum": ["UP", "DOWN", "FLAT"] },
+          { "type": "null" }
+        ]
+      }
+    }
+  }
+}

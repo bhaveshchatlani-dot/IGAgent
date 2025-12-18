@@ -5,7 +5,7 @@
   "required": ["run_id", "created_at", "headline", "caption", "claims", "evidence"],
   "properties": {
     "run_id": { "type": "string" },
-    "created_at": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
     "headline": { "type": "string" },
     "caption": { "type": "string" },
     "claims": { "type": "array", "items": { "type": "string" } },
@@ -17,6 +17,18 @@
         "properties": {
           "claim": { "type": "string" },
           "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path"],
+        "properties": {
+          "type": { "type": "string", "enum": ["image"] },
+          "path": { "type": "string" }
         },
         "additionalProperties": false
       }

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MarketSnapshot",
+  "type": "object",
+  "required": ["tickers", "as_of", "close", "prev_close", "close_date", "prev_close_date", "note"],
+  "properties": {
+    "tickers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "as_of": { "type": "string", "format": "date-time" },
+
+    "close": { "$ref": "#/$defs/numMap" },
+    "prev_close": { "$ref": "#/$defs/numMap" },
+
+    "close_date": { "$ref": "#/$defs/dateMap" },
+    "prev_close_date": { "$ref": "#/$defs/dateMap" },
+
+    "note": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "numMap": {
+      "type": "object",
+      "additionalProperties": { "anyOf": [{ "type": "number" }, { "type": "null" }] }
+    },
+    "dateMap": {
+      "type": "object",
+      "additionalProperties": { "anyOf": [{ "type": "string", "format": "date" }, { "type": "null" }] }
+    }
+  }
+}
