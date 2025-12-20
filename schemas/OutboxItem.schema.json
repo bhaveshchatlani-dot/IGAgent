@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OutboxItem",
+  "type": "object",
+  "required": [
+    "run_id",
+    "created_at",
+    "status",
+    "platform",
+    "asset_path",
+    "caption",
+    "claims",
+    "evidence"
+  ],
+  "properties": {
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+
+    "status": { "type": "string", "enum": ["READY_FOR_REVIEW", "APPROVED", "PUBLISHED", "FAILED"] },
+    "platform": { "type": "string", "enum": ["instagram"] },
+
+    "asset_path": { "type": "string", "minLength": 1 },
+    "caption": { "type": "string", "minLength": 1 },
+
+    "claims": { "type": "array", "items": { "type": "string" } },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim", "source"],
+        "properties": {
+          "claim": { "type": "string" },
+          "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "scheduled_for": { "type": ["string", "null"], "format": "date-time" },
+    "published_at": { "type": ["string", "null"], "format": "date-time" },
+
+    "attempts": { "type": "integer", "minimum": 0 },
+    "last_error": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

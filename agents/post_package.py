@@ -1,60 +1,55 @@
-from datetime import datetime, timezone
+from __future__ import annotations
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+from typing import Any, Dict, List, Optional
 
-def build_post_package(run_id: str, run_config: dict, market_snapshot: dict, signals: dict, image_path: str | None = None) -> dict:
-    created_at = now_iso()
-    headline = f"Daily Snapshot: {', '.join(run_config['tickers'])}"
 
-    close = market_snapshot.get("close", {})
-    pct = signals.get("pct_change_1d", {})
-    direction = signals.get("direction_1d", {})
+def _build_source_string(truth_ledger: Dict[str, Any]) -> str:
+    ms = (truth_ledger.get("sources", {}) or {}).get("market_snapshot_note", "").strip()
+    sg = (truth_ledger.get("sources", {}) or {}).get("signals_note", "").strip()
 
-    def fmt_price(x):
-        return f"{x:.2f}" if isinstance(x, (int, float)) else "N/A"
+    parts = []
+    if ms:
+        parts.append(ms)
+    if sg:
+        parts.append(sg)
 
-    def fmt_pct(x):
-        return f"{x:+.2f}%" if isinstance(x, (int, float)) else "N/A"
+    return " | ".join(parts) if parts else "Derived from MarketSnapshot + Signals"
 
-    def arrow(dir_val):
-        return {"UP": "🔺", "DOWN": "🔻", "FLAT": "➖"}.get(dir_val, "➖")
 
-    lines = []
-    for t in run_config["tickers"]:
-        a = arrow(direction.get(t))
-        lines.append(f"- {t}: {fmt_price(close.get(t))} {a} ({fmt_pct(pct.get(t))})")
-    summary_lines = "\n".join(lines)
+def _build_caption_from_truth_ledger(truth_ledger: Dict[str, Any]) -> str:
+    lines: List[str] = list(truth_ledger["caption_lines_allowed"])
+    lines.append(f"As of: {truth_ledger['as_of']}")
+    return "\n".join(lines)
 
-    claims = [
-        f"Pulled latest close prices for {', '.join(run_config['tickers'])}.",
-        "Computed 1D % change vs previous close."
-    ]
 
-    evidence = [
-        {"claim": claims[0], "source": market_snapshot.get("note", "market_snapshot")},
-        {"claim": claims[1], "source": signals.get("note", "signals")}
-    ]
+def build_post_package(
+    run_id: str,
+    run_config: Dict[str, Any],
+    truth_ledger: Dict[str, Any],
+    image_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Hard rule: caption + claims must be derived ONLY from TruthLedger fields.
+    """
+    headline = f"Daily Snapshot ({run_config['timeframe']})"
 
-    caption = (
-        f"{headline}\n\n"
-        f"- Market: {run_config['market']}\n"
-        f"- Timeframe: {run_config['timeframe']}\n\n"
-        "Close (1D %):\n"
-        f"{summary_lines}\n\n"
-        "Educational only. Not financial advice."
-    )
+    caption = _build_caption_from_truth_ledger(truth_ledger)
 
-    pkg = {
+    claims: List[str] = list(truth_ledger["caption_lines_allowed"]) + [f"As of: {truth_ledger['as_of']}"]
+    source_str = _build_source_string(truth_ledger)
+
+    evidence = [{"claim": c, "source": source_str} for c in claims]
+
+    post_package: Dict[str, Any] = {
         "run_id": run_id,
-        "created_at": created_at,
+        "created_at": truth_ledger["as_of"],  # consistent + already validated as date-time
         "headline": headline,
         "caption": caption,
         "claims": claims,
-        "evidence": evidence
+        "evidence": evidence,
     }
 
     if image_path:
-        pkg["assets"] = [{"type": "image", "path": image_path}]
+        post_package["assets"] = [{"type": "image", "path": str(image_path)}]
 
-    return pkg
+    return post_package

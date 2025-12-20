@@ -1,55 +1,76 @@
 from __future__ import annotations
-from typing import Dict, Any, List
 
-def _fmt_price(x):
-    return f"{x:.2f}" if isinstance(x, (int, float)) else "N/A"
+from typing import Any, Dict, List
 
-def _fmt_pct(x):
-    return f"{x:+.2f}%" if isinstance(x, (int, float)) else "N/A"
 
-def build_creative_brief(run_config: Dict[str, Any], market_snapshot: Dict[str, Any], signals: Dict[str, Any]) -> Dict[str, Any]:
-    tickers: List[str] = run_config["tickers"]
+def _arrow(direction: str) -> str:
+    return {"UP": "↑", "DOWN": "↓", "FLAT": "→"}[direction]
 
-    close = market_snapshot.get("close", {})
-    pct = signals.get("pct_change_1d", {})
-    direction = signals.get("direction_1d", {})
 
-    title = "Daily Snapshot"
-    subtitle = f"{run_config.get('market','US')} • {run_config.get('timeframe','1D')} • {', '.join(tickers)}"
+def build_creative_brief(run_config: Dict[str, Any], truth_ledger: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Hard rule: CreativeBrief must be derived ONLY from TruthLedger + RunConfig fields.
+    (RunConfig is allowed because it's config, not market interpretation.)
+    """
+    timeframe = run_config["timeframe"]
+    market = run_config.get("market", "").strip() or "US"
+    tickers = run_config["tickers"]
 
-    rows = []
-    for t in tickers:
-        rows.append({
-            "ticker": t,
-            "close_str": _fmt_price(close.get(t)),
-            "pct_str": _fmt_pct(pct.get(t)),
-            "direction": direction.get(t) or "FLAT"
-        })
+    rows_in: List[Dict[str, Any]] = truth_ledger["rows"]
+    rows: List[Dict[str, Any]] = []
 
-    footer = "Educational only. Not financial advice."
+    for r in rows_in:
+        direction = r["direction"]
+        rows.append(
+            {
+                "ticker": r["ticker"],
+                "close_str": r["close_str"],
+                "pct_str": r["pct_str"],
+                "direction": direction,
+                "arrow": _arrow(direction),
+            }
+        )
 
-    # One strict prompt template (consistency guardrail)
-    image_prompt = (
-        "Create a clean, premium, dark fintech Instagram infographic card (1080x1350, 4:5).\n"
-        "IMPORTANT RULES:\n"
-        "- Use EXACTLY the text provided below. Do not change numbers, tickers, punctuation, or spacing.\n"
-        "- Do not add extra tickers, extra numbers, or extra sentences.\n"
-        "- Layout: Header (title), subheader (subtitle), table rows, small footer.\n"
-        "- Background: dark. Minimal accents. High contrast text. No charts.\n"
-        "- For direction icons, use ONLY: UP=🔺, DOWN=🔻, FLAT=➖.\n\n"
-        f"TITLE: {title}\n"
-        f"SUBTITLE: {subtitle}\n\n"
-        "ROWS (render each row as: TICKER | CLOSE | 1D% | ICON):\n"
-        + "\n".join([f"{r['ticker']} | {r['close_str']} | {r['pct_str']} | { {'UP':'🔺','DOWN':'🔻','FLAT':'➖'}.get(r['direction'],'➖') }" for r in rows]) +
-        f"\n\nFOOTER: {footer}\n"
-    )
+    # Whitelisted “extra text” (not claims): market/timeframe/tickers + disclaimer
+    context_line = f"{market} • {timeframe} • {', '.join(tickers)}"
+    footer_disclaimer = "Educational only. Not financial advice."
+
+    # Prompt: allow aesthetics, but lock all text to an explicit whitelist
+    allowed_rows = [f"{r['ticker']}  {r['close_str']}  {r['arrow']} {r['pct_str']}" for r in rows]
+
+    lines: List[str] = []
+    lines.append("Design a premium Instagram finance snapshot graphic.")
+    lines.append("Canvas: 1080x1080 (1:1).")
+    lines.append("")
+    lines.append("Style (allowed, decorative only):")
+    lines.append("- Dark modern background with subtle diagonal lines / gradient texture (no charts).")
+    lines.append("- Clean grid/table layout, thin dividers, soft glow accents.")
+    lines.append("- Use a blue accent for positive and red accent for negative.")
+    lines.append("- Use small up/down triangle icons if desired (decorative).")
+    lines.append("")
+    lines.append("TEXT MUST MATCH EXACTLY (do not add ANY other text):")
+    lines.append(f"1) Title: Daily Snapshot ({timeframe})")
+    lines.append(f"2) Context line: {context_line}")
+    lines.append(f"3) As-of line: As of {truth_ledger['as_of']}")
+    lines.append("4) Table rows (exactly these, exactly as written):")
+    for row_line in allowed_rows:
+        lines.append(f"   - {row_line}")
+    lines.append(f"5) Footer: {footer_disclaimer}")
+    lines.append("")
+    lines.append("Hard rules:")
+    lines.append("- Do NOT add tickers, prices, percentages, commentary, advice, predictions, or news.")
+    lines.append("- Do NOT add any extra labels (e.g., 'close', 'change', 'USD') unless included above.")
+    lines.append("- Only decorative shapes/background are allowed beyond the exact text whitelist.")
+
+    image_prompt = "\n".join(lines)
 
     return {
-        "aspect_ratio": "4:5",
-        "title": title,
-        "subtitle": subtitle,
+        "template": run_config["template"],
+        "timeframe": timeframe,
+        "as_of": truth_ledger["as_of"],
+        "aspect_ratio": "1:1",
+        "context_line": context_line,
+        "footer_disclaimer": footer_disclaimer,
         "rows": rows,
-        "footer_note": footer,
         "image_prompt": image_prompt,
-        "note": "deterministic_brief_v1"
     }
