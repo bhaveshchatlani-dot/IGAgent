@@ -1,6 +1,206 @@
 {
-  "tickers": ["AAPL", "TSLA"],
+  "tickers": [
+    "AAPL",
+    "TSLA"
+  ],
   "market": "US",
   "timeframe": "1D",
-  "template": "daily_snapshot"
+  "template": "daily_snapshot",
+  "image": {
+    "mode": "template",
+    "template_path": "assets/templates/movers_losers_blank.png",
+    "icons_dir": "assets/icons",
+    "font_regular": "/System/Library/Fonts/Apple Symbols.ttf",
+    "font_bold": "/System/Library/Fonts/Apple Symbols.ttf",
+    "layout": {
+      "text": {
+        "g1_ticker": {
+          "xy": [
+            110,
+            585
+          ],
+          "max_w": 260,
+          "size": 44
+        },
+        "g1_pct": {
+          "xy": [
+            110,
+            635
+          ],
+          "max_w": 260,
+          "size": 34
+        },
+        "g2_ticker": {
+          "xy": [
+            110,
+            740
+          ],
+          "max_w": 260,
+          "size": 44
+        },
+        "g2_pct": {
+          "xy": [
+            110,
+            790
+          ],
+          "max_w": 260,
+          "size": 34
+        },
+        "g3_ticker": {
+          "xy": [
+            110,
+            895
+          ],
+          "max_w": 260,
+          "size": 44
+        },
+        "g3_pct": {
+          "xy": [
+            110,
+            945
+          ],
+          "max_w": 260,
+          "size": 34
+        },
+        "bw_ticker": {
+          "xy": [
+            410,
+            635
+          ],
+          "max_w": 320,
+          "size": 76
+        },
+        "bw_pct": {
+          "xy": [
+            410,
+            725
+          ],
+          "max_w": 320,
+          "size": 66
+        },
+        "bl_ticker": {
+          "xy": [
+            610,
+            635
+          ],
+          "max_w": 320,
+          "size": 76
+        },
+        "bl_pct": {
+          "xy": [
+            610,
+            725
+          ],
+          "max_w": 320,
+          "size": 66
+        },
+        "d1_ticker": {
+          "xy": [
+            860,
+            585
+          ],
+          "max_w": 240,
+          "size": 44
+        },
+        "d1_pct": {
+          "xy": [
+            860,
+            635
+          ],
+          "max_w": 240,
+          "size": 34
+        },
+        "d2_ticker": {
+          "xy": [
+            860,
+            740
+          ],
+          "max_w": 240,
+          "size": 44
+        },
+        "d2_pct": {
+          "xy": [
+            860,
+            790
+          ],
+          "max_w": 240,
+          "size": 34
+        },
+        "d3_ticker": {
+          "xy": [
+            860,
+            895
+          ],
+          "max_w": 240,
+          "size": 44
+        },
+        "d3_pct": {
+          "xy": [
+            860,
+            945
+          ],
+          "max_w": 240,
+          "size": 34
+        },
+        "header_line": {
+          "xy": [
+            110,
+            380
+          ],
+          "max_w": 900,
+          "size": 26
+        }
+      },
+      "icons": {
+        "g1_icon": [
+          450,
+          560,
+          620,
+          700
+        ],
+        "g2_icon": [
+          450,
+          715,
+          620,
+          855
+        ],
+        "g3_icon": [
+          450,
+          870,
+          620,
+          1010
+        ],
+        "bw_hero_icon": [
+          290,
+          860,
+          760,
+          1120
+        ],
+        "bl_hero_icon": [
+          520,
+          860,
+          990,
+          1120
+        ],
+        "d1_icon": [
+          740,
+          560,
+          850,
+          700
+        ],
+        "d2_icon": [
+          740,
+          715,
+          850,
+          855
+        ],
+        "d3_icon": [
+          740,
+          870,
+          850,
+          1010
+        ]
+      }
+    }
+  }
 }

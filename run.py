@@ -58,8 +58,14 @@ def main():
     validate_or_die(SCHEMAS, "CreativeBrief", creative_brief)
     save_json(run_dir / "04_creative_brief.json", creative_brief)
 
-    # Step 5: Image (Gemini)
-    image_filename = generate_ig_image(run_dir, creative_brief, filename="05_image.png")
+       # Step 5: Image (Template renderer OR Gemini)
+    image_filename = generate_ig_image(
+        run_dir,
+        creative_brief,
+        run_config=run_config,
+        filename="05_image.png",
+    )
+    
 
     # Step 6: Post package (caption ONLY from TruthLedger)
     post_package = build_post_package(

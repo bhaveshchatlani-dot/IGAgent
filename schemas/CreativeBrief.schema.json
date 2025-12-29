@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CreativeBrief",
   "type": "object",
   "required": [
@@ -10,7 +10,8 @@
     "context_line",
     "footer_disclaimer",
     "rows",
-    "image_prompt"
+    "image_prompt",
+    "render_payload"
   ],
   "properties": {
     "template": { "type": "string" },
@@ -38,7 +39,70 @@
       }
     },
 
-    "image_prompt": { "type": "string", "minLength": 1 }
+    "image_prompt": { "type": "string", "minLength": 1 },
+
+    "render_payload": {
+      "type": "object",
+      "required": ["header_line", "gainers", "biggest_winner", "biggest_loser", "decliners"],
+      "properties": {
+        "header_line": { "type": "string", "minLength": 1 },
+
+        "gainers": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["ticker", "pct", "icon_key"],
+            "properties": {
+              "ticker": { "type": "string", "minLength": 1 },
+              "pct": { "type": "string", "minLength": 1 },
+              "icon_key": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+
+        "biggest_winner": {
+          "type": "object",
+          "required": ["ticker", "pct", "icon_key"],
+          "properties": {
+            "ticker": { "type": "string", "minLength": 1 },
+            "pct": { "type": "string", "minLength": 1 },
+            "icon_key": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+
+        "biggest_loser": {
+          "type": "object",
+          "required": ["ticker", "pct", "icon_key"],
+          "properties": {
+            "ticker": { "type": "string", "minLength": 1 },
+            "pct": { "type": "string", "minLength": 1 },
+            "icon_key": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+
+        "decliners": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["ticker", "pct", "icon_key"],
+            "properties": {
+              "ticker": { "type": "string", "minLength": 1 },
+              "pct": { "type": "string", "minLength": 1 },
+              "icon_key": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

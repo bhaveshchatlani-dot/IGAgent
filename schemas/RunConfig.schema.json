@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RunConfig",
   "type": "object",
   "required": ["tickers", "market", "timeframe", "template"],
@@ -7,7 +7,63 @@
     "tickers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
     "market": { "type": "string" },
     "timeframe": { "type": "string", "enum": ["1D", "1W", "1M"] },
-    "template": { "type": "string", "enum": ["daily_snapshot"] }
+    "template": { "type": "string", "enum": ["daily_snapshot"] },
+
+    "image": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["template", "gemini"] },
+
+        "template_path": { "type": "string" },
+        "icons_dir": { "type": "string" },
+        "font_regular": { "type": "string" },
+        "font_bold": { "type": "string" },
+
+        "layout": {
+          "type": "object",
+          "required": ["text", "icons"],
+          "properties": {
+            "text": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9_]+$": {
+                  "type": "object",
+                  "required": ["xy"],
+                  "properties": {
+                    "xy": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": { "type": "integer" }
+                    },
+                    "max_w": { "type": "integer", "minimum": 1 },
+                    "size": { "type": "integer", "minimum": 1 }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+
+            "icons": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9_]+$": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": { "type": "integer" }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }

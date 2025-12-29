@@ -7,14 +7,38 @@ def _arrow(direction: str) -> str:
     return {"UP": "↑", "DOWN": "↓", "FLAT": "→"}[direction]
 
 
+def _sign_pct(direction: str, pct_str: str) -> str:
+    """
+    Ensures pct includes a sign when appropriate.
+    Assumes pct_str already contains % and value (e.g. '0.6%').
+    If pct_str already starts with + or -, leave it.
+    """
+    s = pct_str.strip()
+    if not s:
+        return s
+    if s[0] in {"+", "-"}:
+        return s
+    if direction == "UP":
+        return f"+{s}"
+    if direction == "DOWN":
+        return f"-{s}"
+    return s
+
+
 def build_creative_brief(run_config: Dict[str, Any], truth_ledger: Dict[str, Any]) -> Dict[str, Any]:
     """
     Hard rule: CreativeBrief must be derived ONLY from TruthLedger + RunConfig fields.
-    (RunConfig is allowed because it's config, not market interpretation.)
     """
     timeframe = run_config["timeframe"]
     market = run_config.get("market", "").strip() or "US"
     tickers = run_config["tickers"]
+
+    image_cfg = (run_config.get("image") or {})
+    image_mode = (image_cfg.get("mode") or "gemini").lower()
+
+    # Choose aspect ratio: template design is typically 4:5 (1080x1350)
+    # Gemini snapshot prompt previously used 1:1. Keep both supported.
+    aspect_ratio = "4:5" if image_mode == "template" else "1:1"
 
     rows_in: List[Dict[str, Any]] = truth_ledger["rows"]
     rows: List[Dict[str, Any]] = []
@@ -35,7 +59,9 @@ def build_creative_brief(run_config: Dict[str, Any], truth_ledger: Dict[str, Any
     context_line = f"{market} • {timeframe} • {', '.join(tickers)}"
     footer_disclaimer = "Educational only. Not financial advice."
 
-    # Prompt: allow aesthetics, but lock all text to an explicit whitelist
+    # -----------------------------
+    # Gemini prompt (keep as-is)
+    # -----------------------------
     allowed_rows = [f"{r['ticker']}  {r['close_str']}  {r['arrow']} {r['pct_str']}" for r in rows]
 
     lines: List[str] = []
@@ -64,13 +90,64 @@ def build_creative_brief(run_config: Dict[str, Any], truth_ledger: Dict[str, Any
 
     image_prompt = "\n".join(lines)
 
+    # -----------------------------
+    # Template render payload (NEW)
+    # -----------------------------
+    # Expect TruthLedger to contain these in a structured way.
+    # If not present yet, you can populate these from Signals later.
+    # For now, we use whatever is already in TruthLedger (hard rule compliant).
+
+    # You will likely evolve TruthLedger to provide movers/losers structure.
+    # For a safe v0: reuse top rows to fill slots deterministically.
+    def pick_n(src: List[Dict[str, Any]], n: int) -> List[Dict[str, Any]]:
+        return (src[:n] + [src[-1]] * n)[:n]  # guard, never crash if short
+
+    top3 = pick_n(rows_in, 3)
+
+    # Minimal icon mapping (deterministic). You can replace with a proper mapping table later.
+    # IMPORTANT: do not guess "official logos". Use silhouette icon keys you actually have in assets/icons.
+    icon_map = (image_cfg.get("icon_map") or {})  # optional: {"AAPL":"apple", ...}
+    def icon_key_for(ticker: str) -> str:
+        return icon_map.get(ticker, "generic")  # ensure assets/icons/generic.png exists
+
+    # Use directions to add +/- signs if your pct_str lacks them.
+    def pct_for(r: Dict[str, Any]) -> str:
+        return _sign_pct(r["direction"], r["pct_str"])
+
+    render_payload = {
+        # This is the header line that appears under the title in your template design.
+        # Keep it truth-only: market + timeframe + as_of (or add indices later via TruthLedger allowed claims).
+        "header_line": f"{market} | Close | {timeframe} | As of {truth_ledger['as_of']}",
+        "gainers": [
+            {"ticker": top3[0]["ticker"], "pct": pct_for(top3[0]), "icon_key": icon_key_for(top3[0]["ticker"])},
+            {"ticker": top3[1]["ticker"], "pct": pct_for(top3[1]), "icon_key": icon_key_for(top3[1]["ticker"])},
+            {"ticker": top3[2]["ticker"], "pct": pct_for(top3[2]), "icon_key": icon_key_for(top3[2]["ticker"])},
+        ],
+        "biggest_winner": {
+            "ticker": top3[0]["ticker"],
+            "pct": pct_for(top3[0]),
+            "icon_key": icon_key_for(top3[0]["ticker"]),
+        },
+        "biggest_loser": {
+            "ticker": top3[-1]["ticker"],
+            "pct": pct_for(top3[-1]),
+            "icon_key": icon_key_for(top3[-1]["ticker"]),
+        },
+        "decliners": [
+            {"ticker": top3[0]["ticker"], "pct": pct_for(top3[0]), "icon_key": icon_key_for(top3[0]["ticker"])},
+            {"ticker": top3[1]["ticker"], "pct": pct_for(top3[1]), "icon_key": icon_key_for(top3[1]["ticker"])},
+            {"ticker": top3[2]["ticker"], "pct": pct_for(top3[2]), "icon_key": icon_key_for(top3[2]["ticker"])},
+        ],
+    }
+
     return {
         "template": run_config["template"],
         "timeframe": timeframe,
         "as_of": truth_ledger["as_of"],
-        "aspect_ratio": "1:1",
+        "aspect_ratio": aspect_ratio,
         "context_line": context_line,
         "footer_disclaimer": footer_disclaimer,
         "rows": rows,
         "image_prompt": image_prompt,
+        "render_payload": render_payload,  # NEW
     }

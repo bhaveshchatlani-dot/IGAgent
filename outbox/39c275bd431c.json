@@ -1,0 +1,30 @@
+{
+  "run_id": "39c275bd431c",
+  "created_at": "2025-12-29T09:57:35.441791+00:00",
+  "status": "READY_FOR_REVIEW",
+  "platform": "instagram",
+  "asset_path": "/Users/bhaveshchatlani/IGAgent/runs/39c275bd431c/05_image.png",
+  "caption": "AAPL: 273.4 \u2193 -0.15%\nTSLA: 475.19 \u2193 -2.10%\nAs of: 2025-12-29T09:57:35.441791+00:00",
+  "claims": [
+    "AAPL: 273.4 \u2193 -0.15%",
+    "TSLA: 475.19 \u2193 -2.10%",
+    "As of: 2025-12-29T09:57:35.441791+00:00"
+  ],
+  "evidence": [
+    {
+      "claim": "AAPL: 273.4 \u2193 -0.15%",
+      "source": "yfinance_close_prevclose | close_vs_prev_close"
+    },
+    {
+      "claim": "TSLA: 475.19 \u2193 -2.10%",
+      "source": "yfinance_close_prevclose | close_vs_prev_close"
+    },
+    {
+      "claim": "As of: 2025-12-29T09:57:35.441791+00:00",
+      "source": "yfinance_close_prevclose | close_vs_prev_close"
+    }
+  ],
+  "scheduled_for": null,
+  "attempts": 0,
+  "last_error": null
+}
